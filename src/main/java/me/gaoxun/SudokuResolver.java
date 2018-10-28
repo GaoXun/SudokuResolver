@@ -9,6 +9,7 @@ import java.util.*;
 /**
  * Provide a sudoku solution which use stack
  */
+@SuppressWarnings("unchecked")
 public class SudokuResolver {
     private static HashSet<Integer> FIXED_LIST = new HashSet<>();
 
@@ -149,7 +150,7 @@ public class SudokuResolver {
     }
 
     /**
-     * Return the next frame of the specified coordinate which has not been assumed
+     * Return the next frame of the specified coordinate which does not have value and has not been assumed.
      */
     private SudoStackFrame nextFrameCoordinate(int x, int y) {
         int j = y;
@@ -183,7 +184,8 @@ public class SudokuResolver {
      *
      * @return
      */
-    private boolean isValid() {
+    @SuppressWarnings("Duplicates")
+    public boolean isValid() {
         Set<Integer> set = new HashSet<>();
         for (int i = 1; i < 10; ++i) {
             set.clear();

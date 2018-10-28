@@ -9,9 +9,10 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * This is an optimized Sudoku solution which use recursive method
- * The detailed docs is same as {@link me.gaoxun.SudokuResolver}
+ * This is an optimized Sudoku solution which use recursive method.
+ * The detailed docs is the same as {@link SudokuResolver}
  */
+@SuppressWarnings("unchecked")
 public class SudokuResolverRecursive2 {
     private static Set<Integer> FIXED_LIST = new HashSet<>();
 
@@ -98,7 +99,8 @@ public class SudokuResolverRecursive2 {
         return a[_x][_y];
     }
 
-    private boolean isValid() {
+    @SuppressWarnings("Duplicates")
+    public boolean isValid() {
         Set<Integer> set = new HashSet<>();
         for (int i = 1; i < 10; ++i) {
             set.clear();
