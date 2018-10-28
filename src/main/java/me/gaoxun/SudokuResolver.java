@@ -1,9 +1,7 @@
-/*
- * @Author: GaoXun
- * @Email: gao.x@live.com
+/**
+ * @author: GaoXun
+ * @email: gao.x@live.com
  */
-
-
 package me.gaoxun;
 
 import java.util.*;
@@ -11,7 +9,7 @@ import java.util.*;
 /**
  * Provide a sudoku solution which use stack
  */
-public class SudoResolver {
+public class SudokuResolver {
     private static HashSet<Integer> FIXED_LIST = new HashSet<>();
 
     static {
@@ -58,10 +56,10 @@ public class SudoResolver {
     private int fullStackSize = 0;
 
     /**
-     * @param vals the format of the array is a number between 111-999
+     * @param vals the format of the array element is a number between 111-999
      *             and the number 321 replace that <code>nodes[3][2] = 1</code>
      */
-    public SudoResolver(int[] vals) {
+    public SudokuResolver(int[] vals) {
         for (int i = 1; i < 10; ++i) {
             for (int j = 1; j < 10; ++j) {
                 nodes[i][j] = 0;
@@ -77,7 +75,7 @@ public class SudoResolver {
             int v = val % 10;
             int y = (val / 10) % 10;
             nodes[x][y] = v;
-            this.addTo(x, y, v);
+            this.set(x, y, v);
         }
         this.fullStackSize = 81 - vals.length;
         stack = new ArrayDeque<>(this.fullStackSize);
@@ -90,7 +88,7 @@ public class SudoResolver {
      * @param y
      * @param val
      */
-    private void addTo(int x, int y, int val) {
+    private void set(int x, int y, int val) {
         h[x].add(val);
         v[y].add(val);
         getSpecifiedArea(x, y).add(val);
@@ -105,8 +103,8 @@ public class SudoResolver {
      *
      * @param frame
      */
-    private void addTo(SudoStackFrame frame) {
-        this.addTo(frame.x, frame.y, frame.currIt.next());
+    private void set(SudoStackFrame frame) {
+        this.set(frame.x, frame.y, frame.currIt.next());
     }
 
     /**
@@ -114,7 +112,7 @@ public class SudoResolver {
      *
      * @param frame
      */
-    private void removeFrom(SudoStackFrame frame) {
+    private void unset(SudoStackFrame frame) {
         int x = frame.x, y = frame.y;
         int oldVal = nodes[x][y];
         h[x].remove(oldVal);
@@ -136,7 +134,7 @@ public class SudoResolver {
         while (stack.size() > 0) {
             currFrame = stack.getLast();
             if (currFrame.currIt.hasNext()) {
-                this.addTo(currFrame);
+                this.set(currFrame);
                 if (stack.size() == fullStackSize) {
                     break;
                 }
@@ -145,7 +143,7 @@ public class SudoResolver {
                 stack.add(nextFrame);
             } else {
                 stack.removeLast();
-                if (stack.size() > 0) this.removeFrom(stack.getLast());
+                if (stack.size() > 0) this.unset(stack.getLast());
             }
         }
     }
@@ -233,7 +231,7 @@ public class SudoResolver {
                 926, 933, 985
         };
 
-        SudoResolver resolver = new SudoResolver(vals);
+        SudokuResolver resolver = new SudokuResolver(vals);
         resolver.resolve();
         resolver.print();
     }

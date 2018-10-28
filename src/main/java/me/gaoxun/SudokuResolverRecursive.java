@@ -1,6 +1,6 @@
-/*
- * @Author: GaoXun
- * @Email: gao.x@live.com
+/**
+ * @author: GaoXun
+ * @email: gao.x@live.com
  */
 
 package me.gaoxun;
@@ -10,8 +10,10 @@ import java.util.Set;
 
 /**
  * Provide a Sudoku solution which use recursive method
+ * This solution is not a good one,
+ * it's required to be optimized
  */
-public class SudoResolverRecursive {
+public class SudokuResolverRecursive {
     private static class SudoNode {
         static Set<Integer> FIXED_LIST = new HashSet<>();
 
@@ -23,21 +25,29 @@ public class SudoResolverRecursive {
         Set<Integer> probable;
         boolean isCleared = false;
 
-        public SudoNode() {
+        SudoNode() {
             this.val = 0;
             this.probable = new HashSet<>(FIXED_LIST);
         }
 
-        public boolean isFixed() {
+        /**
+         * @return true if the value of this area is fixed.
+         */
+        boolean isFixed() {
             return this.probable == null || this.probable.size() < 2;
         }
 
-        public void setVal(int val) {
+        /**
+         * set the value is Fixed
+         *
+         * @param val
+         */
+        void setVal(int val) {
             this.val = val;
             this.probable = null;
         }
 
-        public void remove(int val) {
+        void remove(int val) {
             if (!this.isFixed()) {
                 this.probable.remove(val);
                 if (this.probable.size() == 1) {
@@ -48,65 +58,30 @@ public class SudoResolverRecursive {
         }
     }
 
-    private static class SudoResolverHelper {
-
-        SudoNode[][] nodes = new SudoNode[10][10];
-        Set<Integer>[] v = new HashSet[10];
-        Set<Integer>[] h = new HashSet[10];
-        Set<Integer>[][] a = new HashSet[3][3];
-
-        public SudoResolverHelper(int[] vals) {
-            for (int i = 1; i < 10; ++i) {
-                for (int j = 1; j < 10; ++j) {
-                    nodes[i][j] = new SudoNode();
-                }
-                h[i] = new HashSet<>();
-                v[i] = new HashSet<>();
-            }
-            for (int i = 0; i < 3; ++i)
-                for (int j = 0; j < 3; ++j)
-                    a[i][j] = new HashSet<>();
-            for (int val : vals) {
-                int x = val / 100;
-                int v = val % 10;
-                int y = (val / 10) % 10;
-                nodes[x][y].setVal(v);
-                this.addTo(x, y, v);
-            }
-        }
-
-        void addTo(int x, int y, int val) {
-            int startX = (int) Math.floor((x - 0.5) / 3);
-            int startY = (int) Math.floor((y - 0.5) / 3);
-            a[startX][startY].add(val);
-            v[y].add(val);
-            h[x].add(val);
-            nodes[x][y].val = val;
-        }
-
-        void removeFrom(int x, int y) {
-            int oldVal = nodes[x][y].val;
-            nodes[x][y].val = 0;
-            v[y].remove(oldVal);
-            h[x].remove(oldVal);
-            int startX = (int) Math.floor((x - 0.5) / 3);
-            int startY = (int) Math.floor((y - 0.5) / 3);
-            a[startX][startY].remove(oldVal);
-        }
-
-        boolean isValidToAdd(int x, int y, int val) {
-            if (v[y].contains(val) || h[x].contains(val)) return false;
-            int _x = (int) Math.floor((x - 0.5) / 3);
-            int _y = (int) Math.floor((y - 0.5) / 3);
-            return !a[_x][_y].contains(val);
-        }
-    }
-
-    private SudoResolverHelper helper;
     private boolean resolved = false;
+    private SudoNode[][] nodes = new SudoNode[10][10];
+    private Set<Integer>[] v = new HashSet[10];
+    private Set<Integer>[] h = new HashSet[10];
+    private Set<Integer>[][] a = new HashSet[3][3];
 
-    public SudoResolverRecursive(int[] vals) {
-        helper = new SudoResolverHelper(vals);
+    public SudokuResolverRecursive(int[] vals) {
+        for (int i = 1; i < 10; ++i) {
+            for (int j = 1; j < 10; ++j) {
+                nodes[i][j] = new SudoNode();
+            }
+            h[i] = new HashSet<>();
+            v[i] = new HashSet<>();
+        }
+        for (int i = 0; i < 3; ++i)
+            for (int j = 0; j < 3; ++j)
+                a[i][j] = new HashSet<>();
+        for (int val : vals) {
+            int x = val / 100;
+            int v = val % 10;
+            int y = (val / 10) % 10;
+            nodes[x][y].setVal(v);
+            this.set(x, y, v);
+        }
     }
 
     public void resolve() {
@@ -115,7 +90,6 @@ public class SudoResolverRecursive {
     }
 
     private void doStep1() {
-        SudoNode[][] nodes = helper.nodes;
         boolean modified = true;
         while (modified) {
             modified = false;
@@ -154,7 +128,6 @@ public class SudoResolverRecursive {
                 }
                 return;
             }
-            SudoNode[][] nodes = helper.nodes;
             if (nodes[nextX][nextY].isFixed()) {
                 int j = nextY;
                 for (int i = nextX; i < 10; ++i) {
@@ -170,11 +143,11 @@ public class SudoResolverRecursive {
                 }
             }
             if (!nodes[nextX][nextY].isFixed()) {
-                for (Integer probableVal : helper.nodes[nextX][nextY].probable) {
-                    if (helper.isValidToAdd(nextX, nextY, probableVal)) {
-                        helper.addTo(nextX, nextY, probableVal);
+                for (Integer probableVal : nodes[nextX][nextY].probable) {
+                    if (isValidToAdd(nextX, nextY, probableVal)) {
+                        set(nextX, nextY, probableVal);
                         doStep2(nextX, nextY + 1);
-                        if (!resolved) helper.removeFrom(nextX, nextY);
+                        if (!resolved) unset(nextX, nextY);
                     }
                 }
             } else if (this.isValid()) {
@@ -184,7 +157,6 @@ public class SudoResolverRecursive {
     }
 
     private boolean isValid() {
-        SudoNode[][] nodes = helper.nodes;
         Set<Integer> set = new HashSet<>();
         for (int i = 1; i < 10; ++i) {
             set.clear();
@@ -210,8 +182,33 @@ public class SudoResolverRecursive {
         return true;
     }
 
+    private void set(int x, int y, int val) {
+        int startX = (int) Math.floor((x - 0.5) / 3);
+        int startY = (int) Math.floor((y - 0.5) / 3);
+        a[startX][startY].add(val);
+        v[y].add(val);
+        h[x].add(val);
+        nodes[x][y].val = val;
+    }
+
+    private void unset(int x, int y) {
+        int oldVal = nodes[x][y].val;
+        nodes[x][y].val = 0;
+        v[y].remove(oldVal);
+        h[x].remove(oldVal);
+        int startX = (int) Math.floor((x - 0.5) / 3);
+        int startY = (int) Math.floor((y - 0.5) / 3);
+        a[startX][startY].remove(oldVal);
+    }
+
+    private boolean isValidToAdd(int x, int y, int val) {
+        if (v[y].contains(val) || h[x].contains(val)) return false;
+        int _x = (int) Math.floor((x - 0.5) / 3);
+        int _y = (int) Math.floor((y - 0.5) / 3);
+        return !a[_x][_y].contains(val);
+    }
+
     public void print() {
-        SudoNode[][] nodes = helper.nodes;
         for (int i = 1; i < 10; ++i) {
             for (int j = 1; j < 10; ++j) {
                 System.out.print(nodes[i][j].val + " ");
@@ -233,7 +230,7 @@ public class SudoResolverRecursive {
                 926, 933, 985
         };
 
-        SudoResolverRecursive resolver = new SudoResolverRecursive(vals);
+        SudokuResolverRecursive resolver = new SudokuResolverRecursive(vals);
         resolver.resolve();
         resolver.print();
     }
