@@ -15,6 +15,7 @@ import java.util.Set;
  * The optimized version is {@link SudokuResolverRecursive2}
  */
 @SuppressWarnings("unchecked")
+@Deprecated
 public class SudokuResolverRecursive {
     private static class SudoNode {
         static Set<Integer> FIXED_LIST = new HashSet<>();

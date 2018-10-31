@@ -75,7 +75,6 @@ public class SudokuResolver {
             int x = val / 100;
             int v = val % 10;
             int y = (val / 10) % 10;
-            nodes[x][y] = v;
             this.set(x, y, v);
         }
         this.fullStackSize = 81 - vals.length;
@@ -130,7 +129,6 @@ public class SudokuResolver {
 
     public void resolve() {
         SudoStackFrame currFrame = this.getNextFrame(1, 1);
-        if (currFrame == null) return;
         stack.addLast(currFrame);
         while (stack.size() > 0) {
             currFrame = stack.getLast();
@@ -139,8 +137,7 @@ public class SudokuResolver {
                 if (stack.size() == fullStackSize) {
                     break;
                 }
-                SudoStackFrame nextFrame = this.getNextFrame(currFrame);
-                if (nextFrame == null) throw new RuntimeException();
+                SudoStackFrame nextFrame = this.getNextFrame(currFrame.x, currFrame.y);
                 stack.add(nextFrame);
             } else {
                 stack.removeLast();
@@ -149,34 +146,25 @@ public class SudokuResolver {
         }
     }
 
-    /**
-     * Return the next frame of the specified coordinate which does not have value and has not been assumed.
-     */
-    private SudoStackFrame nextFrameCoordinate(int x, int y) {
+    private SudoStackFrame getNextFrame(int x, int y) {
         int j = y;
-        for (int i = x; i < 10; ++i) {
+        for (int i = x; i < 10 && nodes[x][y] != 0; ++i) {
             for (; j < 10; ++j) {
-                if (nodes[i][j] == 0) return new SudoStackFrame(i, j);
+                if (nodes[i][j] == 0) {
+                    x = i;
+                    y = j;
+                    break;
+                }
             }
             j = 1;
         }
-        return null;
-    }
-
-    private SudoStackFrame getNextFrame(int x, int y) {
-        SudoStackFrame nextFrame = this.nextFrameCoordinate(x, y);
-        if (nextFrame != null) {
-            Set<Integer> leftPossible = new HashSet<>(FIXED_LIST);
-            leftPossible.removeAll(h[nextFrame.x]);
-            leftPossible.removeAll(v[nextFrame.y]);
-            leftPossible.removeAll(getSpecifiedArea(nextFrame.x, nextFrame.y));
-            nextFrame.currIt = leftPossible.iterator();
-        }
+        SudoStackFrame nextFrame = new SudoStackFrame(x, y);
+        Set<Integer> leftPossible = new HashSet<>(FIXED_LIST);
+        leftPossible.removeAll(h[nextFrame.x]);
+        leftPossible.removeAll(v[nextFrame.y]);
+        leftPossible.removeAll(getSpecifiedArea(nextFrame.x, nextFrame.y));
+        nextFrame.currIt = leftPossible.iterator();
         return nextFrame;
-    }
-
-    private SudoStackFrame getNextFrame(SudoStackFrame frame) {
-        return this.getNextFrame(frame.x, frame.y);
     }
 
     /**

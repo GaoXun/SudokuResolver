@@ -10,7 +10,7 @@ import java.util.Set;
 
 /**
  * This is an optimized Sudoku solution which use recursive method.
- * The detailed docs is the same as {@link SudokuResolver}
+ * The detailed doc is the same as {@link SudokuResolver}
  */
 @SuppressWarnings("unchecked")
 public class SudokuResolverRecursive2 {
